@@ -5,7 +5,7 @@ import "unsafe"
 func action() {}
 
 func main() {
-	var str = "go"
+	str := "go"
 	newStr := str + "-go"
 
 	strData := unsafe.StringData(str)

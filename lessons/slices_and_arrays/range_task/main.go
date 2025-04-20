@@ -5,7 +5,7 @@ func main() {
 
 	for i, s := range x {
 		print(i, s, ",")
-		x[i+1] = "M"
+		x[i+1] = "Z"
 		x = append(x, "Z")
 		x[i+1] = "Z"
 	}
