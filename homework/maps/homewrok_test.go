@@ -24,66 +24,57 @@ func NewOrderedMap() OrderedMap {
 }
 
 func (m *OrderedMap) Insert(key, value int) {
-	var inserted bool
-	m.root, inserted = insert(m.root, key, value)
-	if inserted {
-		m.size++
-	}
+	m.root = insert(m.root, key, value)
+	m.size++
+
 }
 
-func insert(n *node, key, value int) (*node, bool) {
+func insert(n *node, key, value int) *node {
 	if n == nil {
-		return &node{key: key, value: value}, true
+		return &node{key: key, value: value}
 	}
 	if key < n.key {
-		var inserted bool
-		n.left, inserted = insert(n.left, key, value)
-		return n, inserted
+		n.left = insert(n.left, key, value)
+		return n
 	}
 	if key > n.key {
-		var inserted bool
-		n.right, inserted = insert(n.right, key, value)
-		return n, inserted
+		n.right = insert(n.right, key, value)
+		return n
 	}
 	n.value = value
-	return n, false
+	return n
 }
 
 func (m *OrderedMap) Erase(key int) {
-	var erased bool
-	m.root, erased = erase(m.root, key)
-	if erased {
-		m.size--
-	}
+	m.root = erase(m.root, key)
+	m.size--
 }
 
-func erase(n *node, key int) (*node, bool) {
+func erase(n *node, key int) *node {
 	if n == nil {
-		return nil, false
+		return nil
 	}
 	if key < n.key {
-		var erased bool
-		n.left, erased = erase(n.left, key)
-		return n, erased
+		n.left = erase(n.left, key)
+		return n
 	}
 	if key > n.key {
-		var erased bool
-		n.right, erased = erase(n.right, key)
-		return n, erased
+		n.right = erase(n.right, key)
+		return n
 	}
 	if n.left == nil {
-		return n.right, true
+		return n.right
 	}
 	if n.right == nil {
-		return n.left, true
+		return n.left
 	}
 	minNode := n.right
 	for minNode.left != nil {
 		minNode = minNode.left
 	}
 	n.key, n.value = minNode.key, minNode.value
-	n.right, _ = erase(n.right, minNode.key)
-	return n, true
+	n.right = erase(n.right, minNode.key)
+	return n
 }
 
 func (m *OrderedMap) Contains(key int) bool {
