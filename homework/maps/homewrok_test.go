@@ -9,32 +9,112 @@ import (
 
 // go test -v homework_test.go
 
+type node struct {
+	key, value  int
+	left, right *node
+}
+
 type OrderedMap struct {
-	// need to implement
+	root *node
+	size int
 }
 
 func NewOrderedMap() OrderedMap {
-	return OrderedMap{} // need to implement
+	return OrderedMap{root: nil, size: 0}
 }
 
 func (m *OrderedMap) Insert(key, value int) {
-	// need to implement
+	var inserted bool
+	m.root, inserted = insert(m.root, key, value)
+	if inserted {
+		m.size++
+	}
+}
+
+func insert(n *node, key, value int) (*node, bool) {
+	if n == nil {
+		return &node{key: key, value: value}, true
+	}
+	if key < n.key {
+		var inserted bool
+		n.left, inserted = insert(n.left, key, value)
+		return n, inserted
+	}
+	if key > n.key {
+		var inserted bool
+		n.right, inserted = insert(n.right, key, value)
+		return n, inserted
+	}
+	n.value = value
+	return n, false
 }
 
 func (m *OrderedMap) Erase(key int) {
-	// need to implement
+	var erased bool
+	m.root, erased = erase(m.root, key)
+	if erased {
+		m.size--
+	}
+}
+
+func erase(n *node, key int) (*node, bool) {
+	if n == nil {
+		return nil, false
+	}
+	if key < n.key {
+		var erased bool
+		n.left, erased = erase(n.left, key)
+		return n, erased
+	}
+	if key > n.key {
+		var erased bool
+		n.right, erased = erase(n.right, key)
+		return n, erased
+	}
+	if n.left == nil {
+		return n.right, true
+	}
+	if n.right == nil {
+		return n.left, true
+	}
+	minNode := n.right
+	for minNode.left != nil {
+		minNode = minNode.left
+	}
+	n.key, n.value = minNode.key, minNode.value
+	n.right, _ = erase(n.right, minNode.key)
+	return n, true
 }
 
 func (m *OrderedMap) Contains(key int) bool {
-	return false // need to implement
+	n := m.root
+	for n != nil {
+		if key < n.key {
+			n = n.left
+		} else if key > n.key {
+			n = n.right
+		} else {
+			return true
+		}
+	}
+	return false
 }
 
 func (m *OrderedMap) Size() int {
-	return 0 // need to implement
+	return m.size
 }
 
 func (m *OrderedMap) ForEach(action func(int, int)) {
-	// need to implement
+	var inOrder func(n *node)
+	inOrder = func(n *node) {
+		if n == nil {
+			return
+		}
+		inOrder(n.left)
+		action(n.key, n.value)
+		inOrder(n.right)
+	}
+	inOrder(m.root)
 }
 
 func TestCircularQueue(t *testing.T) {
