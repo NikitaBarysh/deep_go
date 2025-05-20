@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"testing"
 	"unsafe"
@@ -12,80 +13,102 @@ type Option func(*GamePerson)
 
 func WithName(name string) func(*GamePerson) {
 	return func(person *GamePerson) {
-		// need to implement
+		copy(person.name[:], name)
 	}
 }
 
 func WithCoordinates(x, y, z int) func(*GamePerson) {
 	return func(person *GamePerson) {
-		// need to implement
+		person.x = int32(x)
+		person.y = int32(y)
+		person.z = int32(z)
 	}
 }
 
 func WithGold(gold int) func(*GamePerson) {
 	return func(person *GamePerson) {
-		// need to implement
+		person.gold = uint32(gold)
 	}
 }
 
 func WithMana(mana int) func(*GamePerson) {
 	return func(person *GamePerson) {
-		// need to implement
+		setField32(&person.other, uint32(mana), 0, 10)
 	}
 }
 
 func WithHealth(health int) func(*GamePerson) {
 	return func(person *GamePerson) {
-		// need to implement
+		setField32(&person.other, uint32(health), 10, 10)
 	}
 }
 
 func WithRespect(respect int) func(*GamePerson) {
 	return func(person *GamePerson) {
-		// need to implement
+		setField16(&person.stats, uint16(respect), 0, 4)
 	}
 }
 
 func WithStrength(strength int) func(*GamePerson) {
 	return func(person *GamePerson) {
-		// need to implement
+		setField16(&person.stats, uint16(strength), 4, 4)
 	}
 }
 
 func WithExperience(experience int) func(*GamePerson) {
 	return func(person *GamePerson) {
-		// need to implement
+		setField16(&person.stats, uint16(experience), 8, 4)
 	}
 }
 
 func WithLevel(level int) func(*GamePerson) {
 	return func(person *GamePerson) {
-		// need to implement
+		setField16(&person.stats, uint16(level), 12, 4)
 	}
 }
 
 func WithHouse() func(*GamePerson) {
 	return func(person *GamePerson) {
-		// need to implement
+		setField32(&person.other, 1, 20, 1)
 	}
 }
 
 func WithGun() func(*GamePerson) {
 	return func(person *GamePerson) {
-		// need to implement
+		setField32(&person.other, 1, 21, 1)
 	}
 }
 
 func WithFamily() func(*GamePerson) {
 	return func(person *GamePerson) {
-		// need to implement
+		setField32(&person.other, 1, 22, 1)
 	}
 }
 
 func WithType(personType int) func(*GamePerson) {
 	return func(person *GamePerson) {
-		// need to implement
+		setField32(&person.other, uint32(personType), 23, 2)
 	}
+}
+
+func setField32(dst *uint32, value uint32, offset, bits uint) {
+	mask := uint32((1<<bits - 1) << offset)
+	*dst = (*dst & ^mask) | ((value << offset) & mask)
+}
+
+func setField16(dst *uint16, value uint16, offset, bits uint) {
+	mask := uint16((1<<bits - 1) << offset)
+	*dst = (*dst & ^mask) | ((value << offset) & mask)
+}
+
+func getField32(src uint32, offset, bits uint) uint32 {
+	mask := uint32((1<<bits - 1) << offset)
+	return (src & mask) >> offset
+}
+
+func getField16(src uint16, offset, bits uint) uint16 {
+	mask := uint16((1<<bits - 1) << offset)
+	return (src & mask) >> offset
 }
 
 const (
@@ -95,90 +118,92 @@ const (
 )
 
 type GamePerson struct {
-	// need to implement
+	x     int32
+	y     int32
+	z     int32
+	gold  uint32
+	other uint32 // тут mana health house weapon family playerTypes
+	stats uint16 // 0000| 0000 | 0000| 0000 тут respect strength experience level
+	name  [42]byte
 }
 
 func NewGamePerson(options ...Option) GamePerson {
-	// need to implement
-	return GamePerson{}
+	var gamePerson GamePerson
+	for _, option := range options {
+		option(&gamePerson)
+	}
+
+	return gamePerson
 }
 
 func (p *GamePerson) Name() string {
-	// need to implement
-	return ""
+	name := p.name[:]
+	for i, b := range name {
+		if b == 0 {
+			return string(name[:i])
+		}
+	}
+	return string(name)
 }
 
 func (p *GamePerson) X() int {
-	// need to implement
-	return 0
+	return int(p.x)
 }
 
 func (p *GamePerson) Y() int {
-	// need to implement
-	return 0
+	return int(p.y)
 }
 
 func (p *GamePerson) Z() int {
-	// need to implement
-	return 0
+	return int(p.z)
 }
 
 func (p *GamePerson) Gold() int {
-	// need to implement
-	return 0
+	return int(p.gold)
 }
 
 func (p *GamePerson) Mana() int {
-	// need to implement
-	return 0
+	return int(getField32(p.other, 0, 10))
 }
 
 func (p *GamePerson) Health() int {
-	// need to implement
-	return 0
+	return int(getField32(p.other, 10, 10))
 }
 
 func (p *GamePerson) Respect() int {
-	// need to implement
-	return 0
+	return int(getField16(p.stats, 0, 4))
 }
 
 func (p *GamePerson) Strength() int {
-	// need to implement
-	return 0
+	return int(getField16(p.stats, 4, 4))
 }
 
 func (p *GamePerson) Experience() int {
-	// need to implement
-	return 0
+	return int(getField16(p.stats, 8, 4))
 }
 
 func (p *GamePerson) Level() int {
-	// need to implement
-	return 0
+	return int(getField16(p.stats, 12, 4))
 }
 
 func (p *GamePerson) HasHouse() bool {
-	// need to implement
-	return false
+	return getField32(p.other, 20, 1) != 0
 }
 
 func (p *GamePerson) HasGun() bool {
-	// need to implement
-	return false
+	return getField32(p.other, 21, 1) != 0
 }
 
 func (p *GamePerson) HasFamilty() bool {
-	// need to implement
-	return false
+	return getField32(p.other, 22, 1) != 0
 }
 
 func (p *GamePerson) Type() int {
-	// need to implement
-	return 0
+	return int(getField32(p.other, 23, 2))
 }
 
 func TestGamePerson(t *testing.T) {
+	fmt.Println(unsafe.Sizeof(GamePerson{}))
 	assert.LessOrEqual(t, unsafe.Sizeof(GamePerson{}), uintptr(64))
 
 	const x, y, z = math.MinInt32, math.MaxInt32, 0
